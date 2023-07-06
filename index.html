@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botones Secuenciales</title>
+    <style>
+        .boton {
+            border: 1px solid black;
+            color: black;
+            padding: 0;
+            text-align: center;
+            display: inline-block;
+            font-size: 12px;
+            margin: 2px 2px;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 60px;
+            height: 40px;
+            background-color: white;
+            line-height: 35px;
+            font-weight: bold;
+        }
+
+        #seccion1 {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #seccion2 {
+            background-color: #408afd;
+            text-align: center;
+        }
+
+        #seccionBuscador,
+        #seccionMaquinita,
+        #seccionApartar {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #formulario {
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="seccion2">
+        <h2>Boletos Seleccionados:</h2>
+        <div id="seccionBuscador">
+            <input type="text" id="buscador" placeholder="Buscar boleto...">
+        </div>
+        <div id="seccionMaquinita">
+            <select id="numBotonesAleatorios">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <button id="maquinita">Maquinita de la Suerte</button>
+        </div>
+        <div id="seccionApartar" style="text-align: center;">
+            <button id="apartar" style="font-weight:bold;" onclick="mostrarFormulario()">APARTAR</button>
+        </div>
+        <div id="seleccionados"></div>
+    </div>
+    <div id="seccion1"></div>
+    <div id="formulario">
+        <h3>LLENA TUS DATOS Y DA CLICK EN APARTAR</h3>
+        <p>Boletos seleccionados: <span id="cantidadBoletos"></span></p>
+        <input type="text" placeholder="Numero de WhatsApp" id="whatsapp">
+        <input type="text" placeholder="Nombre" id="nombre">
+        <input type="text" placeholder="Apellidos" id="apellidos">
+        <p>Al finalizar serás redirigido a WhatsApp para enviar la información de tu boleto!</p>
+        <p>Tu boleto solo dura 12 horas apartado.</p>
+        <button style="background-color: blue; color: white; font-weight: bold;" onclick="enviarWhatsApp()">APARTAR</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const seccion1 = document.getElementById("seccion1");
+            const seleccionados = document.getElementById("seleccionados");
+
+            for (let i = 1; i <= 2000; i++) {
+                const numero = i.toString().padStart(4, '0');
+                const boton = document.createElement("button");
+                boton.classList.add("boton");
+                boton.textContent = numero;
+                boton.onclick = function () {
+                    moverBoton(boton);
+                };
+                seccion1.appendChild(boton);
+            }
+
+            document.getElementById("maquinita").onclick = function () {
+                const cantidad = document.getElementById("numBotonesAleatorios").value;
+                for (let i = 0; i < cantidad; i++) {
+                    const index = Math.floor(Math.random() * seccion1.children.length);
+                    const boton = seccion1.children[index];
+                    if (boton) {
+                        moverBoton(boton);
+                    }
+                }
+            };
+
+            document.getElementById("buscador").oninput = function (event) {
+                const query = event.target.value;
+                const botones = seccion1.getElementsByTagName("button");
+                for (let boton of botones) {
+                    boton.style.display = boton.textContent.includes(query) ? "" : "none";
+                }
+            };
+
+            function moverBoton(boton) {
+                seleccionados.appendChild(boton);
+                boton.onclick = function () {
+                    devolverBoton(boton);
+                };
+                actualizarCantidadBoletos();
+            }
+
+            function devolverBoton(boton) {
+                seccion1.appendChild(boton);
+                boton.onclick = function () {
+                    moverBoton(boton);
+                };
+                actualizarCantidadBoletos();
+            }
+
+            function actualizarCantidadBoletos() {
+                document.getElementById("cantidadBoletos").textContent = seleccionados.children.length;
+            }
+
+            window.mostrarFormulario = function () {
+                document.getElementById("formulario").style.display = "block";
+            }
+
+            window.enviarWhatsApp = function () {
+                const numeroWhatsApp = document.getElementById("whatsapp").value;
+                const nombre = document.getElementById("nombre").value;
+                const apellidos = document.getElementById("apellidos").value;
+                let boletos = '';
+                for (let i = 0; i < seleccionados.children.length; i++) {
+                    boletos += seleccionados.children[i].textContent + ' ';
+                }
+                const mensaje = `Hola, me gustaría apartar los siguientes boletos: ${boletos}. Mis datos son: Nombre: ${nombre}, Apellidos: ${apellidos}, Número de WhatsApp: ${numeroWhatsApp}`;
+                const encodedMessage = encodeURI(mensaje);
+                window.open(`https://wa.me/+526625100965?text=${encodedMessage}`);
+            }
+        });
+    </script>
+</body>
+
+</html>
